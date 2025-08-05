@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Timeline of Indian Art</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Lora:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #fdf6e3; /* A warm, parchment-like background */
+        }
+        .lora {
+            font-family: 'Lora', serif;
+        }
+        /* Custom scrollbar for the timeline */
+        .timeline-container::-webkit-scrollbar {
+            height: 8px;
+        }
+        .timeline-container::-webkit-scrollbar-track {
+            background: #d1c4a8;
+            border-radius: 10px;
+        }
+        .timeline-container::-webkit-scrollbar-thumb {
+            background: #8b5e34; /* A rich brown color */
+            border-radius: 10px;
+        }
+        .timeline-container::-webkit-scrollbar-thumb:hover {
+            background: #6a4928;
+        }
+        /* Fade-out effect for scrolling */
+        .timeline-wrapper {
+            position: relative;
+        }
+        .timeline-wrapper::before, .timeline-wrapper::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 50px;
+            pointer-events: none;
+            z-index: 2;
+        }
+        .timeline-wrapper::before {
+            left: 0;
+            background: linear-gradient(to right, #fdf6e3, transparent);
+        }
+        .timeline-wrapper::after {
+            right: 0;
+            background: linear-gradient(to left, #fdf6e3, transparent);
+        }
+    </style>
+</head>
+<body class="text-gray-800">
+
+    <div class="container mx-auto p-4 sm:p-8">
+        <!-- Header -->
+        <header class="text-center mb-12">
+            <h1 class="text-4xl md:text-5xl font-bold lora text-[#6a4928]">A Journey Through Indian Art</h1>
+            <p class="text-lg text-gray-600 mt-2">Click on an artifact to explore its story.</p>
+        </header>
+
+        <!-- Timeline Section -->
+        <div id="timeline" class="mb-12">
+            <div class="timeline-wrapper">
+                <div class="timeline-container overflow-x-auto overflow-y-hidden pb-8 whitespace-nowrap">
+                    <div class="timeline-line relative inline-flex items-center h-40">
+                        <!-- This is where the timeline events will be injected by JS -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Artifact Detail Section -->
+        <div id="artifact-detail" class="hidden bg-white/50 backdrop-blur-sm rounded-2xl shadow-lg p-6 md:p-8 transition-all duration-500 ease-in-out">
+            <div class="flex flex-col md:flex-row gap-8">
+                <div class="md:w-1/3">
+                    <img id="detail-image" src="" alt="Artifact Image" class="w-full h-auto object-cover rounded-lg shadow-md">
+                </div>
+                <div class="md:w-2/3">
+                    <div class="flex justify-between items-start">
+                        <div>
+                           <h2 id="detail-title" class="text-3xl font-bold lora text-[#6a4928]"></h2>
+                           <p id="detail-period" class="text-md text-gray-500 mb-4"></p>
+                        </div>
+                         <button id="close-detail" class="text-2xl text-gray-500 hover:text-gray-800 transition">&times;</button>
+                    </div>
+                    <p id="detail-description" class="text-base mb-4"></p>
+                    <h3 class="text-xl font-semibold lora text-[#6a4928] mb-2">Historical Context</h3>
+                    <p id="detail-context" class="text-base"></p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Initial message when no artifact is selected -->
+        <div id="initial-message" class="text-center py-10">
+            <p class="text-xl text-gray-500">Select an artifact from the timeline above to learn more.</p>
+        </div>
+
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const artifacts = [
+                {
+                    id: 'dancing-girl',
+                    period: 'Indus Valley Civilization (c. 2500-1900 BCE)',
+                    title: 'The Dancing Girl',
+                    image: 'dancing-girl.jpeg',
+                    description: 'This small bronze statuette, only 10.5 cm tall, is a masterpiece of Harappan art. It depicts a young woman in a confident, naturalistic pose, adorned with bangles on her left arm. Her posture suggests a dance-like stance, giving the artifact its name.',
+                    context: 'Discovered in Mohenjo-Daro in 1926, the "Dancing Girl" showcases the advanced metal-working skills of the Indus Valley Civilization. It provides a rare glimpse into the artistic and cultural life of one of the world\'s earliest urban societies, suggesting a sophisticated understanding of human anatomy and expression.'
+                },
+                {
+                    id: 'lion-capital',
+                    period: 'Mauryan Empire (c. 322-185 BCE)',
+                    title: 'Lion Capital of Ashoka',
+                    image: 'lion-capital-of-ashoka.jpeg',
+                    description: 'The Lion Capital is a sculpture of four Asiatic lions standing back to back, originally mounted on top of the Ashoka pillar at Sarnath. The lions are mounted on an abacus with a frieze carrying high-relief sculptures of an elephant, a galloping horse, a bull, and a lion, separated by intervening spoked chariot-wheels.',
+                    context: 'Commissioned by the Mauryan emperor Ashoka in about 250 BCE to mark the spot where Buddha first preached the Dharma. It symbolizes the spread of the Buddha\'s teachings in all directions. The Lion Capital was adopted as the official Emblem of India in 1950.'
+                },
+                {
+                    id: 'sarnath-buddha',
+                    period: 'Gupta Empire (c. 320-550 CE)',
+                    title: 'Seated Buddha from Sarnath',
+                    image: 'seated-buddha-from-sarnath.jpeg',
+                    description: 'Carved from Chunar sandstone, this sculpture depicts the Buddha seated in the padmasana (lotus position). His hands are in the Dharmachakra Pravartana Mudra, the gesture of teaching or "turning the wheel of law." The figure has a serene expression, downcast eyes, and a halo around his head.',
+                    context: 'The Gupta period is often called the "Golden Age of India," known for its remarkable achievements in arts, literature, and science. The Sarnath school of sculpture produced some of the most iconic and spiritually profound images of the Buddha, defining the classical standard for Buddhist art across Asia.'
+                },
+                {
+                    id: 'nataraja',
+                    period: 'Chola Dynasty (c. 850-1250 CE)',
+                    title: 'Shiva Nataraja',
+                    image: 'shiva-natraja.jpeg',
+                    description: 'This bronze sculpture depicts the Hindu god Shiva as the cosmic dancer who performs his divine dance to destroy a weary universe and make way for the process of creation. He is shown within a flaming halo, one leg raised, crushing the demon of ignorance, Apasmara.',
+                    context: 'The Chola Dynasty was renowned for its patronage of the arts, especially bronze casting. The Nataraja bronzes are considered the pinnacle of this art form. They are not just sculptures but a profound synthesis of Hindu philosophy, religion, and art, symbolizing the cosmic cycles of creation and destruction.'
+                },
+                {
+                    id: 'mughal-painting',
+                    period: 'Mughal Empire (c. 1526-1857 CE)',
+                    title: 'Mughal Miniature Painting',
+                    image: 'mughal-miniature-painting.jpeg',
+                    description: 'Mughal painting is a particular style of South Asian painting, generally confined to miniatures either as book illustrations or as single works. It is known for its intricate details, vibrant colors, and realistic portrayal of courtly life, historical events, and nature.',
+                    context: 'This art form developed and flourished during the Mughal Empire under emperors like Akbar, Jahangir, and Shah Jahan. It blended Persian, Indian, and European artistic traditions to create a unique and sophisticated style that documented the opulence and history of the Mughal court.'
+                },
+                {
+                    id: 'bharat-mata',
+                    period: 'Modern Period (c. 1905)',
+                    title: 'Bharat Mata',
+                    image: 'bharat-mata.webp',
+                    description: 'This painting by Abanindranath Tagore depicts a saffron-clad woman, dressed like a sadhvi, holding a book, sheaves of paddy, a piece of white cloth, and a rosary in her four hands. These items symbolize the nationalist aspirations for education, food, clothing, and spiritual liberation.',
+                    context: '"Bharat Mata" (Mother India) became a powerful symbol of the Indian independence movement. Painted during the Swadeshi movement, it was one of the earliest visualizations of the nation as a mother goddess, inspiring a sense of national identity and patriotism among Indians fighting for freedom.'
+                }
+            ];
+
+            const timelineLine = document.querySelector('.timeline-line');
+            const artifactDetailSection = document.getElementById('artifact-detail');
+            const initialMessage = document.getElementById('initial-message');
+            const closeDetailButton = document.getElementById('close-detail');
+
+            // Populate the timeline
+            artifacts.forEach((artifact, index) => {
+                const eventElement = document.createElement('div');
+                eventElement.className = 'timeline-event relative flex flex-col items-center mx-8 cursor-pointer group';
+                eventElement.dataset.id = artifact.id;
+
+                const isUp = index % 2 === 0;
+                
+                eventElement.innerHTML = `
+                    <div class="event-content p-4 bg-white rounded-lg shadow-md w-48 text-center transition-transform duration-300 group-hover:scale-105 group-hover:shadow-xl ${isUp ? 'mb-4' : 'mt-4 order-last'}">
+                        <img src="${artifact.image}" alt="${artifact.title}" class="w-full h-24 object-cover rounded-md mb-2">
+                        <h3 class="font-semibold text-sm">${artifact.title}</h3>
+                        <p class="text-xs text-gray-500">${artifact.period.split('(')[0].trim()}</p>
+                    </div>
+                    <div class="dot w-4 h-4 bg-[#8b5e34] rounded-full border-4 border-[#fdf6e3] z-10"></div>
+                `;
+                
+                timelineLine.appendChild(eventElement);
+            });
+            
+            // Add central line element
+            const line = document.createElement('div');
+            line.className = 'absolute top-1/2 left-0 w-full h-1 bg-[#d1c4a8] -translate-y-1/2';
+            timelineLine.insertBefore(line, timelineLine.firstChild);
+
+
+            // Handle click on a timeline event
+            timelineLine.addEventListener('click', (e) => {
+                const eventElement = e.target.closest('.timeline-event');
+                if (eventElement) {
+                    const artifactId = eventElement.dataset.id;
+                    const artifact = artifacts.find(a => a.id === artifactId);
+                    displayArtifactDetails(artifact);
+                }
+            });
+
+            // Handle close button click
+            closeDetailButton.addEventListener('click', () => {
+                artifactDetailSection.classList.add('hidden');
+                initialMessage.classList.remove('hidden');
+            });
+
+            // Function to display artifact details
+            function displayArtifactDetails(artifact) {
+                document.getElementById('detail-image').src = artifact.image;
+                document.getElementById('detail-image').alt = artifact.title;
+                document.getElementById('detail-title').textContent = artifact.title;
+                document.getElementById('detail-period').textContent = artifact.period;
+                document.getElementById('detail-description').textContent = artifact.description;
+                document.getElementById('detail-context').textContent = artifact.context;
+
+                initialMessage.classList.add('hidden');
+                artifactDetailSection.classList.remove('hidden');
+                artifactDetailSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        });
+    </script>
+</body>
+</html>
